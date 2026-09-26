@@ -4,11 +4,23 @@ Personal productivity, business-building, and long-term wealth operating system.
 
 ## Foundation
 
-The current stage establishes the App Router shell, dashboard foundation, navigation map, and placeholder module routes. It intentionally has no authentication, persistence, database, API routes, or business logic.
+The current stage establishes the App Router shell, dashboard foundation, private Supabase authentication, approved-device access, navigation map, and placeholder module routes.
 
 Supabase infrastructure is defined in `supabase/migrations`. Apply it with the Supabase CLI using `supabase db push` after linking this project with `supabase link`. The CLI is intentionally not bundled as an application dependency.
 
 After linking the project, generate typed database definitions with `npm run db:types`. The generated `types/database.ts` file should be committed and refreshed whenever migrations change.
+
+## Private access configuration
+
+Set these variables in the deployment environment or `.env.local`:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+AUTHORIZED_USER_ID=
+```
+
+`AUTHORIZED_USER_ID` is server-only and must contain the UUID of the single Supabase Auth user allowed into USMANI OS. There is no public signup flow. The first two approved browsers must be enrolled from `/device-authorize`; device credentials are stored only in secure HttpOnly cookies and their hashes are stored in `user_devices`.
 
 ## Run locally
 

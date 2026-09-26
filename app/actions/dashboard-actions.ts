@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthorizedAccess } from "@/lib/auth/server";
 import { completeTaskForCurrentUser, reopenTaskForCurrentUser, validId } from "@/lib/tasks/task-operations";
 
 type DashboardActionResult = { ok: true } | { ok: false; error: string };
@@ -15,10 +15,10 @@ function todayInTimezone(timeZone: string) {
 export async function setDashboardTaskComplete(taskId: string, complete: boolean): Promise<DashboardActionResult> {
   if (!validId(taskId)) return { ok: false, error: "That task could not be identified." };
 
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-  if (!userId) return { ok: false, error: "Please sign in before updating tasks." };
+  const access = await getAuthorizedAccess();
+  const supabase = access?.supabase;
+  const userId = access?.userId;
+  if (!supabase || !userId) return { ok: false, error: "Please sign in before updating tasks." };
 
   const { data: profile } = await supabase.from("profiles").select("timezone").eq("id", userId).maybeSingle<{ timezone: string }>();
   const completedOn = todayInTimezone(profile?.timezone || "UTC");

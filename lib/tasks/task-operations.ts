@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAuthorizedAccess } from "@/lib/auth/server";
 
 export type TaskInput = {
   title: string;
@@ -28,9 +29,8 @@ function cleanInput(input: TaskInput) {
 }
 
 async function currentUser() {
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  return { supabase, userId: claimsData?.claims?.sub ?? null };
+  const access = await getAuthorizedAccess();
+  return access ?? { supabase: await createClient(), userId: null };
 }
 
 export async function createTaskForCurrentUser(input: TaskInput): Promise<OperationResult<{ id: string }>> {

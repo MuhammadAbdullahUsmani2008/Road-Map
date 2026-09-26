@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthorizedAccess } from "@/lib/auth/server";
 import { completeTaskForCurrentUser, createTaskForCurrentUser, deleteTaskForCurrentUser, reopenTaskForCurrentUser, updateTaskForCurrentUser, type TaskInput } from "@/lib/tasks/task-operations";
 
 function todayInTimezone(timeZone: string) {
@@ -11,10 +11,10 @@ function todayInTimezone(timeZone: string) {
 }
 
 async function currentUserToday() {
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-  if (!userId) return { supabase, today: null as string | null };
+  const access = await getAuthorizedAccess();
+  const supabase = access?.supabase;
+  const userId = access?.userId;
+  if (!supabase || !userId) return { supabase, today: null as string | null };
   const { data: profile } = await supabase.from("profiles").select("timezone").eq("id", userId).maybeSingle<{ timezone: string }>();
   return { supabase, today: todayInTimezone(profile?.timezone || "UTC") };
 }

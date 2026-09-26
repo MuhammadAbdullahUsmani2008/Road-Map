@@ -1,17 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthorizedAccess } from "@/lib/auth/server";
 import { completeTaskForCurrentUser, validId } from "@/lib/tasks/task-operations";
 
 type FocusResult = { ok: true; sessionId?: string; durationSeconds?: number } | { ok: false; error: string };
 
 async function getSessionContext(sessionId: string) {
   if (!validId(sessionId)) return { ok: false as const, error: "That focus session is not valid." };
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-  if (!userId) return { ok: false as const, error: "Please sign in to use Focus Mode." };
+  const access = await getAuthorizedAccess();
+  const supabase = access?.supabase;
+  const userId = access?.userId;
+  if (!supabase || !userId) return { ok: false as const, error: "Please sign in to use Focus Mode." };
   const { data: session, error } = await supabase.from("focus_sessions").select("id, user_id, task_id, started_at, active_started_at, duration_seconds, status").eq("id", sessionId).eq("user_id", userId).maybeSingle();
   if (error || !session) return { ok: false as const, error: "That focus session is no longer available." };
   return { ok: true as const, supabase, userId, session };
@@ -19,10 +19,10 @@ async function getSessionContext(sessionId: string) {
 
 export async function startFocusAction(taskId: string): Promise<FocusResult> {
   if (!validId(taskId)) return { ok: false, error: "That task could not be identified." };
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-  if (!userId) return { ok: false, error: "Please sign in to use Focus Mode." };
+  const access = await getAuthorizedAccess();
+  const supabase = access?.supabase;
+  const userId = access?.userId;
+  if (!supabase || !userId) return { ok: false, error: "Please sign in to use Focus Mode." };
   const { data: task } = await supabase.from("tasks").select("id").eq("id", taskId).eq("user_id", userId).maybeSingle();
   if (!task) return { ok: false, error: "That task is not available in your workspace." };
   const { data: existing } = await supabase.from("focus_sessions").select("id, task_id").eq("user_id", userId).in("status", ["active", "paused"]).order("created_at", { ascending: false }).limit(1).maybeSingle();

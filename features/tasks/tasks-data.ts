@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { getAuthorizedAccess } from "@/lib/auth/server";
 
 export type TaskStatus = "inbox" | "planned" | "in_progress" | "completed" | "cancelled";
 
@@ -35,11 +35,10 @@ function dateInTimezone(timeZone: string) {
 }
 
 export async function getTasksData(): Promise<TasksData> {
-  const supabase = await createClient();
-  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
+  const access = await getAuthorizedAccess();
   const fallbackToday = dateInTimezone("UTC");
-  if (claimsError || !userId) return { authenticated: false, error: null, today: fallbackToday, tasks: [], roadmapWeeks: [] };
+  if (!access) return { authenticated: false, error: null, today: fallbackToday, tasks: [], roadmapWeeks: [] };
+  const { supabase, userId } = access;
 
   const [{ data: profile }, { data: rawTasks, error: tasksError }, { data: rawCompletions, error: completionsError }, { data: rawWeeks, error: weeksError }] = await Promise.all([
     supabase.from("profiles").select("timezone").eq("id", userId).maybeSingle<{ timezone: string }>(),

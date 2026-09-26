@@ -1,0 +1,6 @@
+import Link from "next/link";
+import { ShieldX } from "lucide-react";
+
+export default function AccessDeniedPage() {
+  return <main className="flex min-h-screen items-center justify-center bg-[var(--canvas)] px-5 py-10 text-[var(--ink)]"><section className="w-full max-w-md rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-8 text-center shadow-[var(--shadow-md)]"><div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--danger-tint)] text-[var(--danger)]"><ShieldX size={22} /></div><p className="mt-6 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--danger)]">Access denied</p><h1 className="mt-3 text-3xl font-semibold tracking-[-0.05em]">This account is not approved.</h1><p className="mt-3 text-sm leading-6 text-[var(--muted)]">USMANI OS is private and available only to its authorized account.</p><Link href="/login" className="mt-7 inline-flex min-h-10 items-center justify-center rounded-xl bg-[var(--primary)] px-4 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2">Return to sign in</Link></section></main>;
+}

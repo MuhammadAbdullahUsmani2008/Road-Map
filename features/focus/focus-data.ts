@@ -1,14 +1,13 @@
-import { createClient } from "@/lib/supabase/server";
+import { getAuthorizedAccess } from "@/lib/auth/server";
 
 export type FocusTask = { id: string; title: string; description: string | null; estimatedMinutes: number | null; status: string };
 export type FocusSession = { id: string; taskId: string | null; startedAt: string; activeStartedAt: string | null; pausedAt: string | null; endedAt: string | null; durationSeconds: number; status: "active" | "paused" | "completed" | "abandoned" };
 export type FocusData = { authenticated: boolean; task: FocusTask | null; session: FocusSession | null; error: string | null };
 
 export async function getFocusData(taskId: string | undefined): Promise<FocusData> {
-  const supabase = await createClient();
-  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-  if (claimsError || !userId) return { authenticated: false, task: null, session: null, error: null };
+  const access = await getAuthorizedAccess();
+  if (!access) return { authenticated: false, task: null, session: null, error: null };
+  const { supabase, userId } = access;
 
   let task: FocusTask | null = null;
   if (taskId) {

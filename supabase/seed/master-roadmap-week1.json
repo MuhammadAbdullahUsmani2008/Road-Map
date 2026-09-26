@@ -1,0 +1,251 @@
+{
+  "goal": {
+    "importKey": "wealth-master-goal",
+    "title": "Build a sustainable halal business and asset base toward an aspirational $1,000,000+ net worth within approximately 5–7 years.",
+    "description": "Build sustainable halal businesses, develop valuable skills, generate and retain legitimate profits, reinvest intelligently, and accumulate productive assets over approximately 5–7 years, with an aspirational long-term target of $1,000,000+ net worth.",
+    "horizonYears": 7,
+    "status": "active"
+  },
+  "years": [
+    {
+      "importKey": "wealth-master-goal:year-2026",
+      "year": 2026,
+      "title": "Foundation, Launch, Validation and Operating Systems",
+      "objective": "Operate both businesses in parallel, gather real market evidence, establish repeatable systems, and develop disciplined execution.",
+      "status": "active",
+      "phases": [
+        {
+          "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation",
+          "title": "Foundation, Launch, Validation and Operating Systems",
+          "objective": "Launch both business tracks and establish the operating systems that will carry execution forward.",
+          "sortOrder": 0,
+          "status": "active",
+          "months": [
+            {
+              "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09",
+              "monthStart": "2026-09-01",
+              "title": "September 2026",
+              "objective": "Launch the first E-Commerce advertising campaign and begin the YouTube Automation business.",
+              "status": "active",
+              "weeks": [
+                {
+                  "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28",
+                  "weekStart": "2026-09-28",
+                  "weekEnd": "2026-10-03",
+                  "objective": "Launch the first E-Commerce advertising campaign, begin the YouTube Automation business immediately, establish baseline measurement, and collect the first real-world evidence from both business tracks.",
+                  "status": "active",
+                  "tasks": [
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-ec-01",
+                      "title": "Complete final E-Commerce pre-launch QA",
+                      "description": "Complete final store QA before the first advertising campaign, including the product page, offer, customer journey, payment/COD process where applicable, shipping/fulfillment information, and analytics/tracking.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-ec-02",
+                      "title": "Finalize E-Commerce advertising creatives",
+                      "description": "Finalize the advertising creatives required for the first controlled campaign.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-ec-03",
+                      "title": "Finalize E-Commerce campaign settings",
+                      "description": "Complete the campaign configuration and confirm the campaign is ready for launch on 29 September 2026.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-ec-04",
+                      "title": "Establish E-Commerce test budget limit",
+                      "description": "Define the maximum amount the project owner is willing to risk on the initial controlled advertising test.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-ec-05",
+                      "title": "Record E-Commerce launch assumptions",
+                      "description": "Record the assumptions, expectations and baseline information for the first advertising test in USMANI OS.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-ec-06",
+                      "title": "Launch first E-Commerce advertising campaign",
+                      "description": "Launch the first E-Commerce advertising campaign on 29 September 2026 and confirm that the campaign is delivering correctly.",
+                      "dueOn": "2026-09-29",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-ec-07",
+                      "title": "Monitor initial E-Commerce campaign delivery",
+                      "description": "Monitor campaign delivery and identify technical or operational problems after launch.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-ec-08",
+                      "title": "Track initial E-Commerce campaign data",
+                      "description": "Record relevant advertising spend, traffic/click data, conversion information, orders and customer inquiries as data becomes available.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-ec-09",
+                      "title": "Monitor E-Commerce customer and fulfillment issues",
+                      "description": "Monitor customer questions, order issues, fulfillment problems, refunds/RTO issues where applicable, and other operational observations.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-ec-10",
+                      "title": "Document E-Commerce initial observations",
+                      "description": "Record meaningful observations from the first advertising campaign and identify possible problems with the advertisement, offer, store or customer journey.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-ec-11",
+                      "title": "Make only justified E-Commerce adjustments",
+                      "description": "Make changes only when supported by available evidence. Avoid emotional decisions based on very limited early data.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-ec-12",
+                      "title": "Complete Week 1 E-Commerce review",
+                      "description": "Review the first campaign data and document what happened, what was learned, and what should be investigated or tested next.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-01",
+                      "title": "Finalize initial YouTube channel direction",
+                      "description": "Finalize the initial channel direction for the YouTube Automation business.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-02",
+                      "title": "Define YouTube target audience",
+                      "description": "Define the intended target audience for the initial YouTube channel.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-03",
+                      "title": "Define YouTube content angle",
+                      "description": "Define the initial content angle for the YouTube channel.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-04",
+                      "title": "Set up YouTube channel",
+                      "description": "Create and configure the initial YouTube channel.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-05",
+                      "title": "Research initial YouTube content opportunities",
+                      "description": "Research potential initial video topics and content opportunities.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-06",
+                      "title": "Select initial YouTube topics",
+                      "description": "Select the first batch of video topics based on the project owner's research and decisions.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-07",
+                      "title": "Establish YouTube production workflow",
+                      "description": "Establish the initial workflow for research, scripting, voice production, editing, thumbnails and publishing.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-08",
+                      "title": "Create first YouTube script",
+                      "description": "Research and create the first video script.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-09",
+                      "title": "Produce first YouTube video",
+                      "description": "Produce the first YouTube video using the established workflow.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-10",
+                      "title": "Create first YouTube thumbnail and title package",
+                      "description": "Prepare the thumbnail and title package for the first video.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-11",
+                      "title": "Publish first YouTube video",
+                      "description": "Publish the first YouTube video if production is completed during the week.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-12",
+                      "title": "Begin next YouTube video",
+                      "description": "Begin production of the next video so the workflow continues beyond the first upload.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-yt-13",
+                      "title": "Document YouTube production lessons",
+                      "description": "Record what worked, what slowed production down, and what should be improved in the next production cycle.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-os-01",
+                      "title": "Record Week 1 objectives in USMANI OS",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-os-02",
+                      "title": "Record E-Commerce execution in USMANI OS",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-os-03",
+                      "title": "Record YouTube execution in USMANI OS",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-os-04",
+                      "title": "Complete Week 1 daily reports",
+                      "description": "Use the existing daily report system to record actual execution, blockers, lessons and outcomes.",
+                      "status": "planned"
+                    },
+                    {
+                      "importKey": "wealth-master-goal:year-2026:phase-foundation-launch-validation:month-2026-09:week-2026-09-28:task-os-05",
+                      "title": "Complete Week 1 weekly review",
+                      "description": "Review the week across E-Commerce, YouTube Automation and personal execution, then identify what should influence Week 2 planning.",
+                      "status": "planned"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "importKey": "wealth-master-goal:milestone-01",
+      "title": "E-Commerce First Advertising Launch",
+      "description": "First E-Commerce advertising campaign launched and operating as a controlled real-world test.",
+      "dueOn": "2026-09-29",
+      "status": "planned",
+      "track": "E-Commerce"
+    },
+    {
+      "importKey": "wealth-master-goal:milestone-02",
+      "title": "YouTube Automation Started",
+      "description": "Initial YouTube channel and production workflow operational, with first content produced/published or at final publishing stage.",
+      "dueOn": "2026-10-03",
+      "status": "planned",
+      "track": "YouTube Automation"
+    },
+    {
+      "importKey": "wealth-master-goal:milestone-03",
+      "title": "Week 1 Evidence Review Complete",
+      "description": "Week 1 results, observations and lessons recorded and reviewed for planning the next week.",
+      "dueOn": "2026-10-03",
+      "status": "planned",
+      "track": "Operating System"
+    }
+  ]
+}

@@ -23,8 +23,8 @@ export default function DesignPreviewPage() {
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--muted)]">A working canvas for USMANI OS&apos;s visual language. Every example below is reusable presentation, not a feature or data workflow.</p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="secondary" onClick={() => setShowLoading(!showLoading)}>{showLoading ? "Hide loading" : "Show loading"}</Button>
-            <Button onClick={() => setTaskComplete(!taskComplete)}>{taskComplete ? "Reset example" : "Complete example"}<Check size={16} /></Button>
+            <Button type="button" variant="secondary" onClick={() => setShowLoading(!showLoading)}>{showLoading ? "Hide loading" : "Show loading"}</Button>
+            <Button type="button" onClick={() => setTaskComplete(!taskComplete)}>{taskComplete ? "Reset example" : "Complete example"}<Check size={16} /></Button>
           </div>
         </header>
 

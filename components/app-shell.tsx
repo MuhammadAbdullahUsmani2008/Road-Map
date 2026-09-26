@@ -5,17 +5,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import {
-  Brain,
-  BriefcaseBusiness,
+  CalendarCheck,
+  CalendarRange,
   CheckSquare,
   FileText,
-  Flame,
-  FlaskConical,
   LayoutDashboard,
   Map,
   Menu,
+  MonitorPlay,
   Settings,
-  Trophy,
   X,
   Zap,
 } from "lucide-react";
@@ -27,15 +25,13 @@ type AppShellProps = { children: ReactNode };
 
 const iconMap = {
   Dashboard: LayoutDashboard,
+  Today: CalendarCheck,
   Tasks: CheckSquare,
+  Focus: Zap,
   Roadmap: Map,
-  Streak: Flame,
-  "Daily Reports": FileText,
-  Business: BriefcaseBusiness,
-  Experiments: FlaskConical,
-  Milestones: Trophy,
-  Knowledge: Brain,
-  Motivation: Zap,
+  Planning: CalendarRange,
+  Reports: FileText,
+  YouTube: MonitorPlay,
   Settings,
 };
 

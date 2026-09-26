@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { getAuthorizedAccess } from "@/lib/auth/server";
+import { calculateStreaks } from "@/lib/streak";
 
 export type DashboardTask = {
   id: string;
@@ -31,10 +32,12 @@ export type DashboardData = {
   focusedMinutes: null;
   mostImportantTaskId: string | null;
   roadmap: {
+    goalTitle: string | null;
     year: number;
     yearTitle: string;
     phaseTitle: string | null;
     monthTitle: string | null;
+    weekTitle: string | null;
     objective: string | null;
     status: string;
   } | null;
@@ -61,35 +64,6 @@ function dateInTimezone(timeZone: string, date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-US", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date);
   const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
   return `${values.year}-${values.month}-${values.day}`;
-}
-
-function shiftDate(date: string, amount: number) {
-  const shifted = new Date(`${date}T12:00:00Z`);
-  shifted.setUTCDate(shifted.getUTCDate() + amount);
-  return shifted.toISOString().slice(0, 10);
-}
-
-function calculateStreaks(dates: string[], today: string) {
-  const uniqueDates = [...new Set(dates)].sort();
-  const dateSet = new Set(uniqueDates);
-  let currentStreak = 0;
-  let cursor = dateSet.has(today) ? today : shiftDate(today, -1);
-
-  while (dateSet.has(cursor)) {
-    currentStreak += 1;
-    cursor = shiftDate(cursor, -1);
-  }
-
-  let longestStreak = 0;
-  let runningStreak = 0;
-  let previousDate: string | null = null;
-  for (const date of uniqueDates) {
-    runningStreak = previousDate && date === shiftDate(previousDate, 1) ? runningStreak + 1 : 1;
-    longestStreak = Math.max(longestStreak, runningStreak);
-    previousDate = date;
-  }
-
-  return { currentStreak, longestStreak, productiveDays: uniqueDates.length };
 }
 
 function emptyDashboard(today: string, displayDate: string, error: string | null = null): DashboardData {
@@ -120,11 +94,9 @@ function emptyDashboard(today: string, displayDate: string, error: string | null
 export async function getDashboardData(): Promise<DashboardData> {
   const fallbackDate = dateInTimezone("UTC");
   const fallback = emptyDashboard(fallbackDate, new Intl.DateTimeFormat("en-US", { dateStyle: "full", timeZone: "UTC" }).format(new Date()));
-  const supabase = await createClient();
-  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
-  const userId = claimsData?.claims?.sub;
-
-  if (claimsError || !userId) return fallback;
+  const access = await getAuthorizedAccess();
+  if (!access) return fallback;
+  const { supabase, userId } = access;
 
   const { data: profile, error: profileError } = await supabase.from("profiles").select("display_name, timezone").eq("id", userId).maybeSingle<ProfileRow>();
   if (profileError) return emptyDashboard(fallbackDate, fallback.displayDate, "We could not load your profile. Please try again.");
@@ -133,16 +105,17 @@ export async function getDashboardData(): Promise<DashboardData> {
   const today = dateInTimezone(timeZone);
   const displayDate = new Intl.DateTimeFormat("en-US", { dateStyle: "full", timeZone }).format(new Date());
 
-  const [todayCompletionsResult, allCompletionsResult, settingsResult, roadmapYearResult, businessResult, milestoneResult] = await Promise.all([
+  const [todayCompletionsResult, allCompletionsResult, settingsResult, roadmapGoalResult, roadmapYearResult, businessResult, milestoneResult] = await Promise.all([
     supabase.from("task_completions").select("task_id, completed_on").eq("user_id", userId).eq("completed_on", today),
     supabase.from("task_completions").select("task_id, completed_on").eq("user_id", userId).order("completed_on", { ascending: true }).limit(2000),
     supabase.from("app_settings").select("settings").eq("user_id", userId).maybeSingle(),
+    supabase.from("goals").select("title").eq("user_id", userId).eq("status", "active").order("created_at", { ascending: true }).limit(1).maybeSingle<{ title: string }>(),
     supabase.from("roadmap_years").select("year, title, objective, status, id").eq("user_id", userId).eq("status", "active").order("year", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("business_metrics").select("name, value, unit, metric_date").eq("user_id", userId).order("metric_date", { ascending: false }).order("created_at", { ascending: false }).limit(4),
     supabase.from("milestones").select("title, description, achieved_on, status").eq("user_id", userId).order("achieved_on", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
 
-  const firstError = [todayCompletionsResult.error, allCompletionsResult.error, settingsResult.error, roadmapYearResult.error, businessResult.error, milestoneResult.error].find(Boolean);
+  const firstError = [todayCompletionsResult.error, allCompletionsResult.error, settingsResult.error, roadmapGoalResult.error, roadmapYearResult.error, businessResult.error, milestoneResult.error].find(Boolean);
   if (firstError) return emptyDashboard(today, displayDate, "We could not load your dashboard. Please try again.");
 
   const todayCompletions = (todayCompletionsResult.data ?? []) as CompletionRow[];
@@ -182,13 +155,18 @@ export async function getDashboardData(): Promise<DashboardData> {
   const dailyMinimumTasks = Number.isInteger(configuredMinimum) && configuredMinimum > 0 ? configuredMinimum : 1;
   const dailyMinimumComplete = completedTaskCount >= dailyMinimumTasks;
   const roadmapYear = roadmapYearResult.data as { id: string; year: number; title: string; objective: string | null; status: string } | null;
-  let roadmap: DashboardData["roadmap"] = roadmapYear ? { year: roadmapYear.year, yearTitle: roadmapYear.title, phaseTitle: null, monthTitle: null, objective: roadmapYear.objective, status: roadmapYear.status } : null;
+  let roadmap: DashboardData["roadmap"] = roadmapYear ? { goalTitle: roadmapGoalResult.data?.title ?? null, year: roadmapYear.year, yearTitle: roadmapYear.title, phaseTitle: null, monthTitle: null, weekTitle: null, objective: roadmapYear.objective, status: roadmapYear.status } : null;
 
   if (roadmapYear) {
     const { data: phase } = await supabase.from("roadmap_phases").select("id, title, objective, status").eq("user_id", userId).eq("roadmap_year_id", roadmapYear.id).eq("status", "active").order("sort_order", { ascending: true }).limit(1).maybeSingle();
     if (phase) {
-      const { data: month } = await supabase.from("roadmap_months").select("title").eq("user_id", userId).eq("roadmap_phase_id", phase.id).eq("status", "active").order("month_start", { ascending: false }).limit(1).maybeSingle();
-      roadmap = { year: roadmapYear.year, yearTitle: roadmapYear.title, phaseTitle: phase.title, monthTitle: month?.title ?? null, objective: phase.objective ?? roadmapYear.objective, status: roadmapYear.status };
+      const { data: month } = await supabase.from("roadmap_months").select("id, title").eq("user_id", userId).eq("roadmap_phase_id", phase.id).eq("status", "active").order("month_start", { ascending: false }).limit(1).maybeSingle();
+      let weekTitle: string | null = null;
+      if (month) {
+        const { data: week } = await supabase.from("roadmap_weeks").select("objective, week_start").eq("user_id", userId).eq("roadmap_month_id", month.id).eq("status", "active").order("week_start", { ascending: false }).limit(1).maybeSingle();
+        weekTitle = week?.objective || (week?.week_start ? `Week of ${week.week_start}` : null);
+      }
+      roadmap = { goalTitle: roadmapGoalResult.data?.title ?? null, year: roadmapYear.year, yearTitle: roadmapYear.title, phaseTitle: phase.title, monthTitle: month?.title ?? null, weekTitle, objective: phase.objective ?? roadmapYear.objective, status: roadmapYear.status };
     }
   }
 
