@@ -21,19 +21,31 @@ async function currentUserToday() {
 
 export async function createTaskAction(input: TaskInput) {
   const result = await createTaskForCurrentUser(input);
-  if (result.ok) revalidatePath("/");
+  if (result.ok) {
+    revalidatePath("/today");
+    revalidatePath("/tasks");
+    revalidatePath("/");
+  }
   return result;
 }
 
 export async function updateTaskAction(taskId: string, input: TaskInput) {
   const result = await updateTaskForCurrentUser(taskId, input);
-  if (result.ok) revalidatePath("/");
+  if (result.ok) {
+    revalidatePath("/today");
+    revalidatePath("/tasks");
+    revalidatePath("/");
+  }
   return result;
 }
 
 export async function deleteTaskAction(taskId: string) {
   const result = await deleteTaskForCurrentUser(taskId);
-  if (result.ok) revalidatePath("/");
+  if (result.ok) {
+    revalidatePath("/today");
+    revalidatePath("/tasks");
+    revalidatePath("/");
+  }
   return result;
 }
 
@@ -41,7 +53,11 @@ export async function completeTaskAction(taskId: string) {
   const { today } = await currentUserToday();
   if (!today) return { ok: false as const, error: "Please sign in before updating tasks." };
   const result = await completeTaskForCurrentUser(taskId, today);
-  if (result.ok) revalidatePath("/");
+  if (result.ok) {
+    revalidatePath("/today");
+    revalidatePath("/tasks");
+    revalidatePath("/");
+  }
   return result;
 }
 
@@ -49,6 +65,10 @@ export async function reopenTaskAction(taskId: string) {
   const { today } = await currentUserToday();
   if (!today) return { ok: false as const, error: "Please sign in before updating tasks." };
   const result = await reopenTaskForCurrentUser(taskId, today);
-  if (result.ok) revalidatePath("/");
+  if (result.ok) {
+    revalidatePath("/today");
+    revalidatePath("/tasks");
+    revalidatePath("/");
+  }
   return result;
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, CircleAlert, Layers3, Map, Target, X } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, CircleAlert, Layers3, Map, Plus, Target, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { saveMonthObjectiveAction, saveWeekObjectiveAction } from "@/app/actions/planning-actions";
 import { EmptyState } from "@/components/feedback/feedback-patterns";
@@ -177,6 +177,8 @@ function WeekView({ month, targetMonthStart, monthOffset, setMonthOffset, select
             <IconButton onClick={() => setMonthOffset(monthOffset + 1)} aria-label="Next month"><ChevronRight size={18} /></IconButton>
           </div>
         </div>
+
+        <div className="mt-6 flex flex-wrap gap-3"><Link href="/planning/week/new" className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-[var(--primary)] px-4 text-sm font-semibold text-white transition hover:bg-[var(--primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2"><Plus size={16} />Create next week</Link></div>
 
         {month && month.weeks.length > 0 ? (
           <div className="mt-6">

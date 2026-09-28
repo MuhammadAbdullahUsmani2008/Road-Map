@@ -31,6 +31,7 @@ export async function startFocusAction(taskId: string): Promise<FocusResult> {
   const now = new Date().toISOString();
   const { data: session, error } = await supabase.from("focus_sessions").insert({ user_id: userId, task_id: taskId, started_at: now, active_started_at: now, duration_seconds: 0, status: "active" }).select("id").single();
   if (error) return { ok: false, error: "The focus session could not be started. Please try again." };
+  revalidatePath("/today");
   revalidatePath("/");
   return { ok: true, sessionId: session.id };
 }
@@ -42,6 +43,8 @@ export async function pauseFocusAction(sessionId: string): Promise<FocusResult> 
   const durationSeconds = context.session.duration_seconds + Math.max(0, Math.floor((Date.now() - new Date(context.session.active_started_at).getTime()) / 1000));
   const { error } = await context.supabase.from("focus_sessions").update({ status: "paused", paused_at: new Date().toISOString(), active_started_at: null, duration_seconds: durationSeconds }).eq("id", sessionId).eq("user_id", context.userId);
   if (error) return { ok: false, error: "The focus session could not be paused." };
+  revalidatePath("/today");
+  revalidatePath("/");
   return { ok: true, sessionId, durationSeconds };
 }
 
@@ -51,6 +54,8 @@ export async function resumeFocusAction(sessionId: string): Promise<FocusResult>
   if (context.session.status !== "paused") return { ok: false, error: "This focus session is not paused." };
   const { error } = await context.supabase.from("focus_sessions").update({ status: "active", active_started_at: new Date().toISOString(), paused_at: null }).eq("id", sessionId).eq("user_id", context.userId);
   if (error) return { ok: false, error: "The focus session could not be resumed." };
+  revalidatePath("/today");
+  revalidatePath("/");
   return { ok: true, sessionId, durationSeconds: context.session.duration_seconds };
 }
 
@@ -72,6 +77,7 @@ export async function stopFocusAction(sessionId: string, completeTask: boolean):
 
   const { error } = await context.supabase.from("focus_sessions").update({ status: completeTask ? "completed" : "abandoned", ended_at: now.toISOString(), active_started_at: null, duration_seconds: durationSeconds }).eq("id", sessionId).eq("user_id", context.userId);
   if (error) return { ok: false, error: "The focus session could not be saved." };
+  revalidatePath("/today");
   revalidatePath("/");
   return { ok: true, sessionId, durationSeconds };
 }

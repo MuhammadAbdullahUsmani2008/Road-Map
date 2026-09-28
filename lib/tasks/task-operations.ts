@@ -6,8 +6,11 @@ export type TaskInput = {
   description?: string;
   priority?: number;
   dueOn?: string;
+  scheduledFor?: string;
   estimatedMinutes?: number;
   roadmapWeekId?: string;
+  track?: string;
+  status?: string;
 };
 
 type OperationResult<T = undefined> = { ok: true; data?: T } | { ok: false; error: string };
@@ -15,6 +18,8 @@ type OperationResult<T = undefined> = { ok: true; data?: T } | { ok: false; erro
 function validId(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
+
+const taskStatuses = ["inbox", "planned", "in_progress", "completed", "cancelled"] as const;
 
 function cleanInput(input: TaskInput) {
   const title = input.title.trim();
@@ -25,7 +30,11 @@ function cleanInput(input: TaskInput) {
   const estimatedMinutes = input.estimatedMinutes;
   if (estimatedMinutes !== undefined && (!Number.isInteger(estimatedMinutes) || estimatedMinutes < 1 || estimatedMinutes > 1440)) return { ok: false as const, error: "Estimated time must be between 1 and 1440 minutes." };
   if (input.roadmapWeekId && !validId(input.roadmapWeekId)) return { ok: false as const, error: "That roadmap week is not valid." };
-  return { ok: true as const, value: { title, description: input.description?.trim() || null, priority, due_on: input.dueOn || null, estimated_minutes: estimatedMinutes ?? null, roadmap_week_id: input.roadmapWeekId || null } };
+  const track = input.track?.trim() || null;
+  if (track && track.length > 40) return { ok: false as const, error: "Track must be 40 characters or fewer." };
+  const status = input.status;
+  if (status !== undefined && !taskStatuses.includes(status as (typeof taskStatuses)[number])) return { ok: false as const, error: "Choose a valid task status." };
+  return { ok: true as const, value: { title, description: input.description?.trim() || null, priority, due_on: input.dueOn || null, scheduled_for: input.scheduledFor || null, estimated_minutes: estimatedMinutes ?? null, roadmap_week_id: input.roadmapWeekId || null, track, status } };
 }
 
 async function currentUser() {
@@ -38,7 +47,8 @@ export async function createTaskForCurrentUser(input: TaskInput): Promise<Operat
   if (!clean.ok) return clean;
   const { supabase, userId } = await currentUser();
   if (!userId) return { ok: false, error: "Please sign in before creating tasks." };
-  const { data, error } = await supabase.from("tasks").insert({ user_id: userId, ...clean.value, status: clean.value.due_on ? "planned" : "inbox" }).select("id").single();
+  const status = clean.value.status ?? (clean.value.due_on || clean.value.scheduled_for ? "planned" : "inbox");
+  const { data, error } = await supabase.from("tasks").insert({ user_id: userId, ...clean.value, status }).select("id").single();
   if (error) return { ok: false, error: "The task could not be created. Please try again." };
   return { ok: true, data: { id: data.id } };
 }
@@ -49,7 +59,9 @@ export async function updateTaskForCurrentUser(taskId: string, input: TaskInput)
   if (!validId(taskId)) return { ok: false, error: "That task could not be identified." };
   const { supabase, userId } = await currentUser();
   if (!userId) return { ok: false, error: "Please sign in before editing tasks." };
-  const { error } = await supabase.from("tasks").update(clean.value).eq("id", taskId).eq("user_id", userId);
+  const values: Record<string, unknown> = { ...clean.value };
+  if (values.status === undefined) delete values.status;
+  const { error } = await supabase.from("tasks").update(values).eq("id", taskId).eq("user_id", userId);
   if (error) return { ok: false, error: "The task could not be updated. Please try again." };
   return { ok: true };
 }

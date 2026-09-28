@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import {
+  Brain,
   CalendarCheck,
   CalendarRange,
   CheckSquare,
@@ -31,6 +32,7 @@ const iconMap = {
   Roadmap: Map,
   Planning: CalendarRange,
   Reports: FileText,
+  Intelligence: Brain,
   YouTube: MonitorPlay,
   Settings,
 };

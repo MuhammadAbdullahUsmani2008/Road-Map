@@ -141,3 +141,102 @@ export async function saveMonthlyReviewAction(input: { monthStart?: string; wins
   revalidatePath("/");
   return { ok: true };
 }
+
+// ---- Explicit Carry-Forward (Phase 15 Step 9) ----
+
+export async function carryForwardTasksAction(input: {
+  taskIds: string[];
+  targetWeekId: string;
+  mode: "reschedule" | "copy";
+}): Promise<ActionResult> {
+  const access = await getAuthorizedAccess();
+  if (!access) return { ok: false, error: "Please sign in before carrying forward tasks." };
+  const { supabase, userId } = access;
+
+  if (!input.taskIds || input.taskIds.length === 0) {
+    return { ok: false, error: "Please select at least one task to carry forward." };
+  }
+
+  const { data: targetWeek, error: weekError } = await supabase
+    .from("roadmap_weeks")
+    .select("id, week_start")
+    .eq("id", input.targetWeekId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (weekError || !targetWeek) {
+    return { ok: false, error: "The target week could not be found." };
+  }
+
+  const { data: tasksToCarry, error: tasksError } = await supabase
+    .from("tasks")
+    .select("id, title, description, priority, estimated_minutes, track, status")
+    .in("id", input.taskIds)
+    .eq("user_id", userId);
+
+  if (tasksError || !tasksToCarry || tasksToCarry.length === 0) {
+    return { ok: false, error: "The selected tasks could not be loaded." };
+  }
+
+  if (input.mode === "reschedule") {
+    const { error: updateError } = await supabase
+      .from("tasks")
+      .update({
+        roadmap_week_id: targetWeek.id,
+        scheduled_for: targetWeek.week_start,
+        due_on: targetWeek.week_start,
+      })
+      .in("id", tasksToCarry.map((t) => t.id))
+      .eq("user_id", userId);
+
+    if (updateError) {
+      return { ok: false, error: "Failed to reschedule tasks to the target week." };
+    }
+  } else {
+    const copies = tasksToCarry.map((t) => ({
+      user_id: userId,
+      title: t.title,
+      description: t.description,
+      priority: t.priority,
+      estimated_minutes: t.estimated_minutes,
+      track: t.track,
+      roadmap_week_id: targetWeek.id,
+      scheduled_for: targetWeek.week_start,
+      due_on: targetWeek.week_start,
+      status: "planned",
+    }));
+
+    const { error: insertError } = await supabase.from("tasks").insert(copies);
+    if (insertError) {
+      return { ok: false, error: "Failed to copy tasks to the target week." };
+    }
+  }
+
+  revalidatePath("/planning/week");
+  revalidatePath("/tasks");
+  revalidatePath("/today");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+// ---- Weekly Milestones (Phase 15 Step 6) ----
+
+export async function toggleWeeklyMilestoneAction(milestoneId: string, achieved: boolean): Promise<ActionResult> {
+  const { supabase, userId, today } = await currentUserToday();
+  if (!supabase || !userId || !today) return { ok: false, error: "Please sign in before updating milestones." };
+
+  const { error } = await supabase
+    .from("milestones")
+    .update({
+      status: achieved ? "achieved" : "planned",
+      achieved_on: achieved ? today : null,
+    })
+    .eq("id", milestoneId)
+    .eq("user_id", userId);
+
+  if (error) return { ok: false, error: "The milestone could not be updated." };
+  revalidatePath("/planning/week");
+  revalidatePath("/youtube/milestones");
+  revalidatePath("/");
+  return { ok: true };
+}
