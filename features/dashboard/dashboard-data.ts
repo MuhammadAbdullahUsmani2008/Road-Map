@@ -1,5 +1,7 @@
 import { getAuthorizedAccess } from "@/lib/auth/server";
 import { calculateStreaks } from "@/lib/streak";
+import { getActiveCommitment, getDailyMotivation, type Commitment, type MotivationItem } from "@/features/motivation/motivation-data";
+import { getLiveMotivationData, markLiveMotivationShown, selectDailyLiveMotivation, type LiveMotivationItem } from "@/features/motivation/live-motivation-data";
 
 export type DashboardTask = {
   id: string;
@@ -43,6 +45,9 @@ export type DashboardData = {
   } | null;
   businessMetrics: Array<{ name: string; value: number; unit: string | null; metricDate: string }>;
   latestMilestone: { title: string; description: string | null; achievedOn: string | null; status: string } | null;
+  dailyMotivation: MotivationItem | null;
+  activeCommitment: Commitment | null;
+  liveMotivation: LiveMotivationItem | null;
 };
 
 type TaskRow = {
@@ -88,6 +93,9 @@ function emptyDashboard(today: string, displayDate: string, error: string | null
     roadmap: null,
     businessMetrics: [],
     latestMilestone: null,
+    dailyMotivation: null,
+    activeCommitment: null,
+    liveMotivation: null,
   };
 }
 
@@ -105,7 +113,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   const today = dateInTimezone(timeZone);
   const displayDate = new Intl.DateTimeFormat("en-US", { dateStyle: "full", timeZone }).format(new Date());
 
-  const [todayCompletionsResult, allCompletionsResult, settingsResult, roadmapGoalResult, roadmapYearResult, businessResult, milestoneResult] = await Promise.all([
+  const [todayCompletionsResult, allCompletionsResult, settingsResult, roadmapGoalResult, roadmapYearResult, businessResult, milestoneResult, motivationItemsResult, commitmentsResult, liveMotivationData] = await Promise.all([
     supabase.from("task_completions").select("task_id, completed_on").eq("user_id", userId).eq("completed_on", today),
     supabase.from("task_completions").select("task_id, completed_on").eq("user_id", userId).order("completed_on", { ascending: true }).limit(2000),
     supabase.from("app_settings").select("settings").eq("user_id", userId).maybeSingle(),
@@ -113,6 +121,9 @@ export async function getDashboardData(): Promise<DashboardData> {
     supabase.from("roadmap_years").select("year, title, objective, status, id").eq("user_id", userId).eq("status", "active").order("year", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("business_metrics").select("name, value, unit, metric_date").eq("user_id", userId).order("metric_date", { ascending: false }).order("created_at", { ascending: false }).limit(4),
     supabase.from("milestones").select("title, description, achieved_on, status").eq("user_id", userId).order("achieved_on", { ascending: false, nullsFirst: false }).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("motivation_items").select("id, title, content, kind, is_active, created_at, updated_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(200),
+    supabase.from("commitments").select("id, title, description, cadence, status, created_at, updated_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(100),
+    getLiveMotivationData(),
   ]);
 
   const firstError = [todayCompletionsResult.error, allCompletionsResult.error, settingsResult.error, roadmapGoalResult.error, roadmapYearResult.error, businessResult.error, milestoneResult.error].find(Boolean);
@@ -175,6 +186,38 @@ export async function getDashboardData(): Promise<DashboardData> {
   else if (streaks.currentStreak > 0) state = "STREAK_RISK";
   else if (taskCount > 0 || allCompletions.length > 0) state = "ACTIVE";
 
+  // Motivation & Commitment data
+  const motivationItems: MotivationItem[] = ((motivationItemsResult.data ?? []) as Array<{ id: string; title: string; content: string | null; kind: string; is_active: boolean; created_at: string; updated_at: string }>).map((row) => ({
+    id: row.id,
+    title: row.title,
+    content: row.content,
+    kind: row.kind as MotivationItem["kind"],
+    isActive: row.is_active,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
+  const commitments: Commitment[] = ((commitmentsResult.data ?? []) as Array<{ id: string; title: string; description: string | null; cadence: string; status: string; created_at: string; updated_at: string }>).map((row) => ({
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    cadence: row.cadence as Commitment["cadence"],
+    status: row.status as Commitment["status"],
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
+  const dailyMotivation = getDailyMotivation(motivationItems, today);
+  const activeCommitment = getActiveCommitment(commitments);
+  const liveMotivation = liveMotivationData.authenticated && !liveMotivationData.error
+    ? selectDailyLiveMotivation(liveMotivationData.items, liveMotivationData.shownHistory, today)
+    : null;
+
+  // Record shown history when a live motivation item is actually selected
+  if (liveMotivation) {
+    markLiveMotivationShown(liveMotivation.id, today).catch(() => {
+      // Silently fail — shown history is best-effort
+    });
+  }
+
   return {
     authenticated: true,
     error: null,
@@ -194,5 +237,8 @@ export async function getDashboardData(): Promise<DashboardData> {
     roadmap,
     businessMetrics: ((businessResult.data ?? []) as Array<{ name: string; value: number; unit: string | null; metric_date: string }>).map((metric) => ({ name: metric.name, value: metric.value, unit: metric.unit, metricDate: metric.metric_date })),
     latestMilestone: milestoneResult.data ? { title: milestoneResult.data.title, description: milestoneResult.data.description, achievedOn: milestoneResult.data.achieved_on, status: milestoneResult.data.status } : null,
+    dailyMotivation,
+    activeCommitment,
+    liveMotivation,
   };
 }

@@ -129,13 +129,13 @@ function ReviewModal({
   onClose,
   onSubmit,
 }: {
-  initial: { summary: string; lessons: string; nextFocus: string };
+  initial: { summary: string; lessons: string; nextFocus: string; commitmentCheck?: string };
   pending: boolean;
   error: string | null;
   onClose: () => void;
-  onSubmit: (form: { summary: string; lessons: string; nextFocus: string }) => void;
+  onSubmit: (form: { summary: string; lessons: string; nextFocus: string; commitmentCheck: string }) => void;
 }) {
-  const [form, setForm] = useState(initial);
+  const [form, setForm] = useState({ commitmentCheck: "", ...initial });
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(16,26,51,0.5)] p-0 sm:items-center sm:p-6" role="presentation">
       <div className="max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-[var(--surface)] p-6 shadow-[var(--shadow-md)] sm:max-w-xl sm:rounded-3xl" role="dialog" aria-modal="true" aria-labelledby="review-title">
@@ -164,6 +164,16 @@ function ReviewModal({
               onChange={(e) => setForm({ ...form, lessons: e.target.value })}
               className="mt-2 min-h-24 w-full rounded-xl border border-[var(--line-strong)] bg-[var(--surface)] px-3 py-3 text-sm font-normal outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-tint)]"
               placeholder="What friction arose, and what directly changes in next week's execution?"
+              maxLength={2000}
+            />
+          </label>
+          <label className="block text-sm font-semibold">
+            Commitment Check (was your commitment kept? what interfered?)
+            <textarea
+              value={form.commitmentCheck}
+              onChange={(e) => setForm({ ...form, commitmentCheck: e.target.value })}
+              className="mt-2 min-h-20 w-full rounded-xl border border-[var(--line-strong)] bg-[var(--surface)] px-3 py-3 text-sm font-normal outline-none transition focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary-tint)]"
+              placeholder="Did you keep your active commitment? What got in the way? What principle should carry forward?"
               maxLength={2000}
             />
           </label>
@@ -510,11 +520,14 @@ export function WeeklyCommandPage({ data }: { data: WeeklyCommandData }) {
     });
   }
 
-  function saveReview(form: { summary: string; lessons: string; nextFocus: string }) {
+  function saveReview(form: { summary: string; lessons: string; nextFocus: string; commitmentCheck: string }) {
     if (!data.week) return;
     setError(null);
     startTransition(async () => {
-      const result = await saveWeeklyReviewAction({ weekStart: data.week!.weekStart, ...form });
+      const lessonsWithCommitment = form.commitmentCheck.trim()
+        ? `${form.lessons.trim()}\n\nCommitment check: ${form.commitmentCheck.trim()}`
+        : form.lessons;
+      const result = await saveWeeklyReviewAction({ weekStart: data.week!.weekStart, summary: form.summary, lessons: lessonsWithCommitment, nextFocus: form.nextFocus });
       if (!result.ok) { setError(result.error); return; }
       setModal(null);
       setSuccess("Weekly review saved.");

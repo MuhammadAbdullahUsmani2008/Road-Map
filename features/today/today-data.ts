@@ -7,6 +7,8 @@ import {
   type TodayTask,
   type TodayTrack,
 } from "./today-helpers";
+import { getActiveCommitment, getDailyMotivation, getRecoveryItems, type Commitment, type MotivationItem } from "@/features/motivation/motivation-data";
+import { getLiveMotivationData, markLiveMotivationShown, selectDailyLiveMotivation, type LiveMotivationItem } from "@/features/motivation/live-motivation-data";
 
 export { compareTasksDeterministic, getDoThisNextTask, inferTrack, type TodayTask, type TodayTrack };
 
@@ -93,6 +95,10 @@ export type TodayData = {
     objective: string | null;
   } | null;
   roadmapWeeks: Array<{ id: string; label: string }>;
+  dailyMotivation: MotivationItem | null;
+  activeCommitment: Commitment | null;
+  recoveryItems: MotivationItem[];
+  liveMotivation: LiveMotivationItem | null;
 };
 
 type TaskRow = {
@@ -171,6 +177,10 @@ function emptyToday(today: string, displayDate: string, error: string | null = n
     week: null,
     roadmap: null,
     roadmapWeeks: [],
+    dailyMotivation: null,
+    activeCommitment: null,
+    recoveryItems: [],
+    liveMotivation: null,
   };
 }
 
@@ -204,6 +214,9 @@ export async function getTodayData(): Promise<TodayData> {
     weeksResult,
     overdueResult,
     yesterdayTasksResult,
+    motivationItemsResult,
+    commitmentsResult,
+    liveMotivationData,
   ] = await Promise.all([
     supabase.from("task_completions").select("task_id, completed_on").eq("user_id", userId).eq("completed_on", today),
     supabase.from("task_completions").select("task_id, completed_on").eq("user_id", userId).order("completed_on", { ascending: true }).limit(2000),
@@ -217,6 +230,9 @@ export async function getTodayData(): Promise<TodayData> {
     supabase.from("roadmap_weeks").select("id, week_start, objective").eq("user_id", userId).order("week_start", { ascending: false }).limit(100),
     supabase.from("tasks").select("id, title, description, status, priority, due_on, scheduled_for, estimated_minutes, roadmap_week_id, track, import_key, created_at").eq("user_id", userId).lt("due_on", today).neq("status", "completed").neq("status", "cancelled").order("priority", { ascending: true }).order("due_on", { ascending: true }).limit(50),
     supabase.from("tasks").select("id, due_on, scheduled_for").eq("user_id", userId).or(`due_on.eq.${yesterday},scheduled_for.eq.${yesterday}`),
+    supabase.from("motivation_items").select("id, title, content, kind, is_active, created_at, updated_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(200),
+    supabase.from("commitments").select("id, title, description, cadence, status, created_at, updated_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(100),
+    getLiveMotivationData(),
   ]);
 
   const firstError = [todayCompletionsResult.error, allCompletionsResult.error, settingsResult.error, reportResult.error, reviewResult.error, focusResult.error, roadmapGoalResult.error, roadmapYearResult.error, weeksResult.error].find(Boolean);
@@ -336,6 +352,39 @@ export async function getTodayData(): Promise<TodayData> {
   const report = reportResult.data ? { id: reportResult.data.id, reportDate: reportResult.data.report_date, wins: reportResult.data.wins, blockers: reportResult.data.blockers, energy: reportResult.data.energy } : null;
   const weeklyReview = reviewResult.data ? { id: reviewResult.data.id, weekStart: reviewResult.data.week_start, summary: reviewResult.data.summary, lessons: reviewResult.data.lessons, nextFocus: reviewResult.data.next_focus } : null;
 
+  // Motivation & Commitment data
+  const motivationItems: MotivationItem[] = ((motivationItemsResult.data ?? []) as Array<{ id: string; title: string; content: string | null; kind: string; is_active: boolean; created_at: string; updated_at: string }>).map((row) => ({
+    id: row.id,
+    title: row.title,
+    content: row.content,
+    kind: row.kind as MotivationItem["kind"],
+    isActive: row.is_active,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
+  const commitments: Commitment[] = ((commitmentsResult.data ?? []) as Array<{ id: string; title: string; description: string | null; cadence: string; status: string; created_at: string; updated_at: string }>).map((row) => ({
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    cadence: row.cadence as Commitment["cadence"],
+    status: row.status as Commitment["status"],
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
+  const dailyMotivation = getDailyMotivation(motivationItems, today);
+  const activeCommitment = getActiveCommitment(commitments);
+  const recoveryItems = getRecoveryItems(motivationItems);
+  const liveMotivation = liveMotivationData.authenticated && !liveMotivationData.error
+    ? selectDailyLiveMotivation(liveMotivationData.items, liveMotivationData.shownHistory, today)
+    : null;
+
+  // Record shown history when a live motivation item is actually selected
+  if (liveMotivation) {
+    markLiveMotivationShown(liveMotivation.id, today).catch(() => {
+      // Silently fail — shown history is best-effort
+    });
+  }
+
   const roadmapYear = roadmapYearResult.data as { id: string; year: number; title: string; objective: string | null; status: string } | null;
   let roadmap: TodayData["roadmap"] = roadmapYear ? { goalTitle: roadmapGoalResult.data?.title ?? null, year: roadmapYear.year, yearTitle: roadmapYear.title, phaseTitle: null, monthTitle: null, weekTitle: null, objective: roadmapYear.objective } : null;
 
@@ -402,5 +451,9 @@ export async function getTodayData(): Promise<TodayData> {
     week,
     roadmap,
     roadmapWeeks: ((weeksResult.data ?? []) as Array<{ id: string; week_start: string; objective: string | null }>).map((weekRow) => ({ id: weekRow.id, label: `${weekRow.week_start}${weekRow.objective ? ` · ${weekRow.objective}` : ""}` })),
+    dailyMotivation,
+    activeCommitment,
+    recoveryItems,
+    liveMotivation,
   };
 }

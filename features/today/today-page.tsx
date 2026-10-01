@@ -887,9 +887,20 @@ export function TodayPage({ data }: { data: TodayData }) {
                   ? `Yesterday had ${data.yesterdayStats.completedCount} completed task${data.yesterdayStats.completedCount === 1 ? "" : "s"} and ${data.yesterdayStats.incompleteCount} incomplete task${data.yesterdayStats.incompleteCount === 1 ? "" : "s"}.`
                   : "Yesterday had 0 completed tasks recorded."}
               </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--ink-soft)]">
-                Protect today&apos;s baseline: complete 1 high-priority task, log 15–30 minutes of focused work, and submit today&apos;s report. Do not restart the roadmap.
-              </p>
+              {data.recoveryItems.length > 0 ? (
+                <div className="mt-3 space-y-2">
+                  {data.recoveryItems.slice(0, 2).map((item) => (
+                    <p key={item.id} className="text-sm leading-6 text-[var(--ink-soft)]">
+                      <span className="font-semibold">{item.title}</span>
+                      {item.content ? `: ${item.content}` : null}
+                    </p>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--ink-soft)]">
+                  Protect today&apos;s baseline: complete 1 high-priority task, log 15–30 minutes of focused work, and submit today&apos;s report. Do not restart the roadmap.
+                </p>
+              )}
             </div>
             <div className="flex flex-wrap gap-3">
               {doThisNext ? (
@@ -905,6 +916,68 @@ export function TodayPage({ data }: { data: TodayData }) {
               </Button>
             </div>
           </div>
+        </section>
+      ) : null}
+
+      {/* STEP 11b: DAILY MOTIVATION & COMMITMENT */}
+      {data.dailyMotivation || data.activeCommitment || data.liveMotivation ? (
+        <section className="mt-6 grid gap-4 lg:grid-cols-2" aria-label="Daily motivation and commitment">
+          {data.dailyMotivation ? (
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--primary)]">
+                <Flame size={13} />Today&apos;s Principle
+              </div>
+              <h3 className="mt-2 text-base font-semibold tracking-[-0.02em]">{data.dailyMotivation.title}</h3>
+              {data.dailyMotivation.content ? (
+                <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{data.dailyMotivation.content}</p>
+              ) : null}
+              <div className="mt-3 flex items-center gap-2">
+                <Badge tone="primary">{data.dailyMotivation.kind}</Badge>
+                <Link href="/motivation" className="text-xs font-semibold text-[var(--primary)] hover:underline">
+                  Manage motivation
+                </Link>
+              </div>
+            </div>
+          ) : null}
+          {data.activeCommitment ? (
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--violet)]">
+                <Target size={13} />Current Commitment
+              </div>
+              <h3 className="mt-2 text-base font-semibold tracking-[-0.02em]">{data.activeCommitment.title}</h3>
+              {data.activeCommitment.description ? (
+                <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{data.activeCommitment.description}</p>
+              ) : null}
+              <div className="mt-3 flex items-center gap-2">
+                <Badge tone="violet">{data.activeCommitment.cadence}</Badge>
+                <Link href="/motivation" className="text-xs font-semibold text-[var(--primary)] hover:underline">
+                  Manage commitments
+                </Link>
+              </div>
+            </div>
+          ) : null}
+          {data.liveMotivation ? (
+            <div className="rounded-2xl border border-[var(--violet-soft)] bg-[var(--violet-tint)] p-5 shadow-[var(--shadow-sm)]">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--violet)]">
+                <Flame size={13} />Fresh From the Web
+              </div>
+              <p className="mt-2 text-sm leading-6 text-[var(--ink)]">&ldquo;{data.liveMotivation.content}&rdquo;</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
+                {data.liveMotivation.author ? <span className="font-semibold">— {data.liveMotivation.author}</span> : null}
+                <span>Source: {data.liveMotivation.source}</span>
+                {data.liveMotivation.sourceUrl ? (
+                  <a
+                    href={data.liveMotivation.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-[var(--primary)] hover:underline"
+                  >
+                    View
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
         </section>
       ) : null}
 

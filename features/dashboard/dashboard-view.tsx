@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowRight, Brain, CalendarDays, CalendarRange, CheckCircle2, FileText, Map, Plus, Rocket, Settings2, Target, Trophy, WalletCards, Zap } from "lucide-react";
+import { ArrowRight, Brain, CalendarDays, CalendarRange, CheckCircle2, FileText, Flame, Map, Plus, Rocket, Settings2, Target, Trophy, WalletCards, Zap } from "lucide-react";
 import { AchievementFeedback, EmptyState, TaskState } from "@/components/feedback/feedback-patterns";
 import { ProgressRing, StreakIndicator } from "@/components/progress/progress-visuals";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +66,61 @@ export function DashboardView({ data }: DashboardViewProps) {
         <div className="rounded-3xl border border-[var(--primary-soft)] bg-[var(--primary-tint)] p-6 sm:p-8"><div className="flex items-center justify-between gap-4"><div><p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-[var(--primary)]"><Rocket size={15} />Most important task</p><h2 id="priority-heading" className="mt-3 text-2xl font-semibold tracking-[-0.04em]">{mostImportantTask?.title ?? "Choose one meaningful target."}</h2></div>{mostImportantTask ? <Badge tone={mostImportantTask.priority <= 2 ? "danger" : "primary"}>P{mostImportantTask.priority}</Badge> : null}</div>{mostImportantTask ? <><p className="mt-3 max-w-xl text-sm leading-6 text-[var(--ink-soft)]">{mostImportantTask.description || "No description added yet. The next clear action is enough."}</p><div className="mt-5 flex flex-wrap items-center gap-3"><TaskState state={mostImportantTask.completedToday ? "complete" : mostImportantTask.status === "cancelled" ? "blocked" : "active"} />{mostImportantTask.dueOn ? <span className="text-xs text-[var(--muted)]">Due {mostImportantTask.dueOn}</span> : null}</div><div className="mt-6 flex flex-wrap gap-3"><ActionLink href={`/focus?task=${mostImportantTask.id}`} primary><Zap size={16} />Start Focus</ActionLink><ActionLink href={`/tasks?task=${mostImportantTask.id}`}>View details <ArrowRight size={16} /></ActionLink></div></> : <><p className="mt-3 max-w-xl text-sm leading-6 text-[var(--ink-soft)]">There is no task data to prioritize yet. Start with one useful commitment for today.</p><div className="mt-6"><ActionLink href="/tasks" primary>Create today&apos;s first task <ArrowRight size={16} /></ActionLink></div></>}</div>
         <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-sm)]"><div className="flex items-center justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--muted)]">Today&apos;s tasks</p><h2 className="mt-2 text-xl font-semibold tracking-[-0.03em]">The next actions</h2></div><Badge tone={data.taskCount > 0 ? "primary" : "neutral"}>{data.taskCount} total</Badge></div><div className="mt-5"><DashboardTaskList tasks={data.tasks} mostImportantTaskId={data.mostImportantTaskId} /></div></div>
       </section>
+
+      {/* Motivation & Commitment */}
+      {data.dailyMotivation || data.activeCommitment || data.liveMotivation ? (
+        <section className="mt-8 grid gap-4 lg:grid-cols-2" aria-label="Motivation and commitment">
+          {data.dailyMotivation ? (
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--primary)]">
+                <Flame size={13} />Today&apos;s Principle
+              </div>
+              <h3 className="mt-2 text-base font-semibold tracking-[-0.02em]">{data.dailyMotivation.title}</h3>
+              {data.dailyMotivation.content ? (
+                <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{data.dailyMotivation.content}</p>
+              ) : null}
+              <div className="mt-3">
+                <Link href="/motivation" className="text-xs font-semibold text-[var(--primary)] hover:underline">
+                  Manage motivation
+                </Link>
+              </div>
+            </div>
+          ) : null}
+          {data.activeCommitment ? (
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-sm)]">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--violet)]">
+                <Target size={13} />Current Commitment
+              </div>
+              <h3 className="mt-2 text-base font-semibold tracking-[-0.02em]">{data.activeCommitment.title}</h3>
+              {data.activeCommitment.description ? (
+                <p className="mt-1 text-sm leading-6 text-[var(--muted)]">{data.activeCommitment.description}</p>
+              ) : null}
+              <div className="mt-3">
+                <Link href="/motivation" className="text-xs font-semibold text-[var(--primary)] hover:underline">
+                  Manage commitments
+                </Link>
+              </div>
+            </div>
+          ) : null}
+          {data.liveMotivation ? (
+            <div className="rounded-2xl border border-[var(--violet-soft)] bg-[var(--violet-tint)] p-5 shadow-[var(--shadow-sm)]">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--violet)]">
+                <Flame size={13} />Fresh From the Web
+              </div>
+              <p className="mt-2 text-sm leading-6 text-[var(--ink)]">&ldquo;{data.liveMotivation.content}&rdquo;</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--muted)]">
+                {data.liveMotivation.author ? <span className="font-semibold">— {data.liveMotivation.author}</span> : null}
+                <span>Source: {data.liveMotivation.source}</span>
+              </div>
+              <div className="mt-2">
+                <Link href="/motivation" className="text-xs font-semibold text-[var(--primary)] hover:underline">
+                  View live motivation
+                </Link>
+              </div>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       <section className="mt-8 grid gap-4 lg:grid-cols-3" aria-label="Long-term progress">
         <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-sm)]"><div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-[var(--violet)]"><Map size={15} />Roadmap</div><h2 className="mt-3 text-xl font-semibold tracking-[-0.03em]">{data.roadmap?.goalTitle ?? data.roadmap?.yearTitle ?? "Your roadmap is ready to be activated."}</h2>{data.roadmap ? <><p className="mt-2 text-sm text-[var(--muted)]">{data.roadmap.objective || "Current direction is set. Keep the next phase visible."}</p><div className="mt-6 grid grid-cols-2 gap-1 text-center text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)] sm:grid-cols-4"><div className="rounded-lg bg-[var(--primary-tint)] px-2 py-3 text-[var(--primary)]">Year {data.roadmap.year}</div><div className="rounded-lg bg-[var(--violet-tint)] px-2 py-3 text-[var(--violet)]">{data.roadmap.phaseTitle ?? "Phase"}</div><div className="rounded-lg bg-[var(--surface-muted)] px-2 py-3">{data.roadmap.monthTitle ?? "Month"}</div><div className="rounded-lg bg-[var(--success-tint)] px-2 py-3 text-[var(--success)]">{data.roadmap.weekTitle ?? "Week"}</div></div></> : <div className="mt-5"><ActionLink href="/roadmap">Set up roadmap <ArrowRight size={16} /></ActionLink></div>}</div>
