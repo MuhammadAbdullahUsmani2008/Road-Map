@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import {
@@ -65,7 +66,7 @@ export function AppShell({ children }: AppShellProps) {
     <div className="min-h-screen bg-[var(--canvas)] text-[var(--ink)] lg:flex">
       <header className="flex h-16 items-center justify-between border-b border-[var(--line)] bg-[var(--surface)] px-4 lg:hidden">
         <Link href="/" className="flex items-center gap-2.5" aria-label="USMANI OS home">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--primary)] text-xs font-bold tracking-[0.12em] text-white">U</span>
+          <Image src="/branding/usmani-os-logo.png" alt="" width={32} height={32} className="h-8 w-8 object-contain" />
           <span className="text-sm font-bold tracking-[0.14em]">USMANI OS</span>
         </Link>
         <div className="flex items-center gap-1">
@@ -79,7 +80,7 @@ export function AppShell({ children }: AppShellProps) {
       <aside className={`${open ? "block" : "hidden"} border-b border-[var(--line)] bg-[var(--sidebar)] lg:flex lg:min-h-screen lg:w-64 lg:flex-col lg:border-b-0 lg:border-r`}>
         <div className="hidden items-center justify-between px-6 py-7 lg:flex">
           <Link href="/" className="flex items-center gap-3" aria-label="USMANI OS home">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--primary)] text-xs font-bold tracking-[0.16em] text-white">U</span>
+            <Image src="/branding/usmani-os-logo.png" alt="" width={36} height={36} className="h-9 w-9 object-contain" />
             <span className="text-sm font-bold tracking-[0.16em]">USMANI OS</span>
           </Link>
         </div>

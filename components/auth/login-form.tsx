@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { AlertCircle, ArrowRight, Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { safeRedirectPath } from "@/lib/auth/config";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,7 @@ export function LoginForm({ nextPath, initialError }: { nextPath?: string; initi
       <div className="absolute inset-x-0 top-0 h-1 bg-[var(--primary)]" aria-hidden="true" />
       <section className="w-full max-w-md">
         <div className="mb-8 flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--primary)] text-sm font-bold tracking-[0.16em] text-white shadow-[0_10px_24px_var(--primary-shadow)]">U</span>
+          <Image src="/branding/usmani-os-logo.png" alt="" width={44} height={44} className="h-11 w-11 object-contain" />
           <div><p className="text-sm font-bold tracking-[0.16em]">USMANI OS</p><p className="mt-1 text-xs text-[var(--muted)]">Private execution system</p></div>
         </div>
         <div className="rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-6 shadow-[var(--shadow-md)] sm:p-8">
